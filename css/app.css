@@ -1,0 +1,28 @@
+.viewport {
+    position : absolute;
+    top: 0;
+    left : 0;
+    bottom: 0;
+    right : 0;
+}
+
+.group > div {
+    display: inline-block;
+    margin: 5px;
+    padding: 1em;
+    height: 100px;
+}
+
+.selected {
+    border: solid;
+    border-width: 1px;
+}
+
+.test {
+    background-color: aliceblue;
+}
+
+
+.exception {
+    background-color: red;
+}
