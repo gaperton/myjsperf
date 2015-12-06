@@ -2,20 +2,38 @@ import Nested, { Model } from 'nestedtypes'
 
 window.Nested = Nested;
 
-function emptyTest( n, context ){
-    for( var i = 0; i < n; i++ ){
-        // do nothing
+function median( arr ){
+    var sorted = arr.sort(),
+        len = sorted.length - 1,
+        first = Math.floor( len / 3 ),
+        second = Math.ceil( len / 3 * 2 );
+
+    console.log( sorted );
+
+    var representative = sorted.slice( first, second ),
+        sum = 0;
+
+    for( var i = 0; i < representative.length; i++ ){
+        sum += representative[ i ];
     }
+
+    return sum / representative.length;
 }
+
+function emptyTest( n, context ){}
 
 function delay( fun ){
     setTimeout( fun, 0 );
 }
 
 function measure( fun, iterations, context ){
+    let i;
     const start = window.performance.now();
-    fun( iterations, context );
-    return window.performance.now() - start;
+    for( i = 0; i < iterations; i++ ) emptyTest( i, context );
+    const adjustment = window.performance.now();
+    for( i = 0; i < iterations; i++ ) fun( i, context );
+    const end = window.performance.now();
+    return end - adjustment - ( adjustment - start );
 }
 
 export const Test = Model.extend( {
@@ -27,36 +45,43 @@ export const Test = Model.extend( {
         time       : Number.value( null ),
         count      : Integer,
         iterations : Integer,
+        ops        : Integer,
         faster     : Number.value( null ),
         exception  : Error.value( null ),
         init       : Function.has.toJSON( false ),
         test       : Function.has.toJSON( false ).value( emptyTest )
     },
 
-    properties : {
-        ops(){
-            return this.time ? Integer( this.count * 1000 / this.time ) : 0;
-        }
-    },
-
-    _measure( iterations, cumulative = false ){
-        if( !cumulative ){
-            this.time = this.count = 0;
-        }
-
+    _measure( iterations ){
         const context = this.init( iterations ) || {};
-        this.time += measure( this.test, iterations, context );
-        this.count += iterations;
+        return measure( this.test, iterations, context );
     },
 
-    _estimate(){
-        this._measure( 100 );
+    _adaptive(){
+        var measurements = [], time = 0;
 
-        for( let n = 200; this.time < 200; n *= 2 ){
-            this._measure( n, true );
+        for( var n = 1000, i = 0; i < 10 && time < 1000; n *= 2, i++ ){
+            time = this._measure( n );
+            measurements.push( Integer( n * 1000 / time ) );
         }
 
-        return this.ops * 3;
+        for( ; i < 20; i++ ){
+            measurements.push( Integer( n * 1000 / this._measure( n ) ) );
+        }
+
+        console.log( measurements );
+        this.ops = median( measurements );
+    },
+
+    _fixed( n ){
+        var measurements = [], time = 0;
+
+        for( var i = 0; i < 40; i++ ){
+            time = this._measure( n );
+            measurements.push( Integer( n * 1000 / time ) );
+        }
+
+        this.ops = median( measurements );
     },
 
     run( a_iterations ){
@@ -65,8 +90,14 @@ export const Test = Model.extend( {
             this.executedAt = new Date();
 
             try{
-                var iterations = this.iterations || a_iterations || this._estimate();
-                this._measure( iterations );
+                var iterations = this.iterations || a_iterations;
+                if( iterations ){
+                    this._fixed( iterations );
+                }
+                else{
+                    this._adaptive();
+                }
+
             }
             catch( e ){
                 this.exception = e;

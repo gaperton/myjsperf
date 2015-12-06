@@ -98,84 +98,54 @@
 	    return _nestedreact2['default'].createElement(
 	        'div',
 	        { className: 'group' },
-	        _nestedreact2['default'].createElement(GroupHeader, { group: group }),
-	        group.tests.map(function (test) {
-	            return _nestedreact2['default'].createElement(CTest, { key: test.cid, test: test, selected: group.getLink('selected') });
-	        })
-	    );
-	};
-	
-	var GroupHeader = function GroupHeader(_ref2) {
-	    var group = _ref2.group;
-	    return _nestedreact2['default'].createElement(
-	        'div',
-	        { className: 'header-col', onClick: function () {
-	                return group.run();
-	            } },
 	        _nestedreact2['default'].createElement(
 	            'div',
-	            null,
-	            group.name
-	        ),
-	        _nestedreact2['default'].createElement(
-	            'div',
-	            null,
-	            ' ',
-	            group.iterations,
-	            ' '
-	        ),
-	        _nestedreact2['default'].createElement(
-	            'div',
-	            null,
-	            ' ',
+	            { className: 'group-header', onClick: function () {
+	                    return group.run();
+	                } },
 	            _nestedreact2['default'].createElement(
-	                'label',
+	                'span',
 	                null,
-	                'Executed At:'
+	                group.name
 	            ),
-	            ' ',
-	            group.executedAt ? group.executedAt.toString() : '-'
+	            group.iterations && _nestedreact2['default'].createElement(
+	                'span',
+	                null,
+	                ' (',
+	                group.iterations,
+	                ' iterations)'
+	            )
 	        ),
 	        _nestedreact2['default'].createElement(
 	            'div',
-	            null,
-	            ' ',
-	            _nestedreact2['default'].createElement(
-	                'label',
-	                null,
-	                'Total time:'
-	            ),
-	            ' ',
-	            group.tests.time
-	        ),
-	        _nestedreact2['default'].createElement(
-	            'div',
-	            null,
-	            ' ',
-	            _nestedreact2['default'].createElement(
-	                'label',
-	                null,
-	                'Avg. ops:'
-	            ),
-	            ' ',
-	            group.tests.ops
+	            { className: 'groupBody' },
+	            group.tests.map(function (test) {
+	                return _nestedreact2['default'].createElement(CTest, { key: test.cid,
+	                    test: test,
+	                    selected: group.getLink('selected'),
+	                    iterations: group.iterations
+	                });
+	            })
 	        )
 	    );
 	};
 	
-	var CTest = function CTest(_ref3) {
-	    var test = _ref3.test;
-	    var selected = _ref3.selected;
+	var CTest = function CTest(_ref2) {
+	    var test = _ref2.test;
+	    var selected = _ref2.selected;
+	    var iterations = _ref2.iterations;
 	
-	    var classes = (0, _classnames2['default'])({
+	    var iAmSelected = test === selected.value,
+	        compare = test.count && selected.value,
+	        classes = (0, _classnames2['default'])({
 	        'test': true,
 	        'exception': test.exception,
-	        'faster': test.faster > 1.2,
-	        'slower': test.faster < 0.80,
-	        'selected': test === selected.value
+	        'faster': compare && test.faster > 1.5,
+	        'slower': compare && test.faster < 0.67,
+	        'selected': iAmSelected
 	    });
 	
-	    var howFast = test.faster > 1.05 ? test.faster.toFixed(2) + 'x faster' : test.faster < 0.95 ? (1 / test.faster).toFixed(2) + 'x slower ' : 'same shit';
+	    var howFast = test.faster > 1.05 ? test.faster.toFixed(1) + 'x faster' : test.faster < 0.95 ? (1 / test.faster).toFixed(1) + 'x slower ' : 'same shit';
 	
 	    return _nestedreact2['default'].createElement(
 	        'div',
@@ -189,25 +159,32 @@
 	        ),
 	        _nestedreact2['default'].createElement(
 	            'div',
+	            null,
+	            'Time: ',
+	            (test.time / 1000).toFixed(3) + ' s'
+	        ),
+	        _nestedreact2['default'].createElement(
+	            'div',
+	            null,
+	            'Count: ',
+	            test.count
+	        ),
+	        _nestedreact2['default'].createElement(
+	            'div',
+	            null,
+	            'Kops: ',
+	            Integer(test.ops / 1000)
+	        ),
+	        compare && !iAmSelected ? _nestedreact2['default'].createElement(
+	            'div',
+	            null,
+	            howFast
+	        ) : _nestedreact2['default'].createElement(
+	            'button',
 	            { onClick: function () {
-	                    return test.run();
+	                    return test.run(iterations);
 	                } },
-	            _nestedreact2['default'].createElement(
-	                'div',
-	                null,
-	                (test.time / 1000).toFixed(1) + ' s'
-	            ),
-	            _nestedreact2['default'].createElement(
-	                'div',
-	                null,
-	                Integer(test.ops / 1000) + ' K op/s'
-	            ),
-	            _nestedreact2['default'].createElement(
-	                'div',
-	                null,
-	                howFast,
-	                ' '
-	            )
+	            'Run'
 	        )
 	    );
 	};
@@ -263,7 +240,7 @@
 	
 	
 	// module
-	exports.push([module.id, ".viewport {\r\n    position : absolute;\r\n    top: 0;\r\n    left : 0;\r\n    bottom: 0;\r\n    right : 0;\r\n}\r\n\r\n.group > div {\r\n    display: inline-block;\r\n    margin: 5px;\r\n    padding: 1em;\r\n    height: 100px;\r\n}\r\n\r\n.selected {\r\n    border: solid;\r\n    border-width: 1px;\r\n}\r\n\r\n.test {\r\n    background-color: aliceblue;\r\n}\r\n\r\n\r\n.exception {\r\n    background-color: red;\r\n}", ""]);
+	exports.push([module.id, ".viewport {\n    position : absolute;\n    top: 0;\n    left : 0;\n    bottom: 0;\n    right : 0;\n}\n\n.group {\n    width : 100%;\n}\n\n.test {\n    display: inline-block;\n    margin: 5px;\n    padding: 1em;\n    width: 200px;\n    background-color: aliceblue;\n}\n\n.selected {\n    border: solid;\n    border-width: 1px;\n}\n\n.exception {\n    background-color: red;\n}\n\n.faster {\n    background-color: #d1ffc8;\n}\n\n.slower {\n    background-color: #ffdfe3;\n}", ""]);
 	
 	// exports
 
@@ -35510,20 +35487,38 @@
 	
 	window.Nested = _nestedtypes2['default'];
 	
-	function emptyTest(n, context) {
-	    for (var i = 0; i < n; i++) {
-	        // do nothing
+	function median(arr) {
+	    var sorted = arr.sort(),
+	        len = sorted.length - 1,
+	        first = Math.floor(len / 3),
+	        second = Math.ceil(len / 3 * 2);
+	
+	    console.log(sorted);
+	
+	    var representative = sorted.slice(first, second),
+	        sum = 0;
+	
+	    for (var i = 0; i < representative.length; i++) {
+	        sum += representative[i];
 	    }
+	
+	    return sum / representative.length;
 	}
+	
+	function emptyTest(n, context) {}
 	
 	function delay(fun) {
 	    setTimeout(fun, 0);
 	}
 	
 	function measure(fun, iterations, context) {
+	    var i = undefined;
 	    var start = window.performance.now();
-	    fun(iterations, context);
-	    return window.performance.now() - start;
+	    for (i = 0; i < iterations; i++) emptyTest(i, context);
+	    var adjustment = window.performance.now();
+	    for (i = 0; i < iterations; i++) fun(i, context);
+	    var end = window.performance.now();
+	    return end - adjustment - (adjustment - start);
 	}
 	
 	var Test = _nestedtypes.Model.extend({
@@ -35535,38 +35530,45 @@
 	        time: Number.value(null),
 	        count: Integer,
 	        iterations: Integer,
+	        ops: Integer,
 	        faster: Number.value(null),
 	        exception: Error.value(null),
 	        init: Function.has.toJSON(false),
 	        test: Function.has.toJSON(false).value(emptyTest)
 	    },
 	
-	    properties: {
-	        ops: function ops() {
-	            return this.time ? Integer(this.count * 1000 / this.time) : 0;
-	        }
-	    },
-	
 	    _measure: function _measure(iterations) {
-	        var cumulative = arguments.length <= 1 || arguments[1] === undefined ? false : arguments[1];
-	
-	        if (!cumulative) {
-	            this.time = this.count = 0;
-	        }
-	
 	        var context = this.init(iterations) || {};
-	        this.time += measure(this.test, iterations, context);
-	        this.count += iterations;
+	        return measure(this.test, iterations, context);
 	    },
 	
-	    _estimate: function _estimate() {
-	        this._measure(100);
+	    _adaptive: function _adaptive() {
+	        var measurements = [],
+	            time = 0;
 	
-	        for (var n = 200; this.time < 200; n *= 2) {
-	            this._measure(n, true);
+	        for (var n = 1000, i = 0; i < 10 && time < 1000; n *= 2, i++) {
+	            time = this._measure(n);
+	            measurements.push(Integer(n * 1000 / time));
 	        }
 	
-	        return this.ops * 3;
+	        for (; i < 20; i++) {
+	            measurements.push(Integer(n * 1000 / this._measure(n)));
+	        }
+	
+	        console.log(measurements);
+	        this.ops = median(measurements);
+	    },
+	
+	    _fixed: function _fixed(n) {
+	        var measurements = [],
+	            time = 0;
+	
+	        for (var i = 0; i < 40; i++) {
+	            time = this._measure(n);
+	            measurements.push(Integer(n * 1000 / time));
+	        }
+	
+	        this.ops = median(measurements);
 	    },
 	
 	    run: function run(a_iterations) {
@@ -35577,8 +35579,12 @@
 	            _this.executedAt = new Date();
 	
 	            try {
-	                var iterations = _this.iterations || a_iterations || _this._estimate();
-	                _this._measure(iterations);
+	                var iterations = _this.iterations || a_iterations;
+	                if (iterations) {
+	                    _this._fixed(iterations);
+	                } else {
+	                    _this._adaptive();
+	                }
 	            } catch (e) {
 	                _this.exception = e;
 	                console.error(e);

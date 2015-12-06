@@ -6,11 +6,16 @@
     right : 0;
 }
 
-.group > div {
+.group {
+    width : 100%;
+}
+
+.test {
     display: inline-block;
     margin: 5px;
     padding: 1em;
-    height: 100px;
+    width: 200px;
+    background-color: aliceblue;
 }
 
 .selected {
@@ -18,11 +23,14 @@
     border-width: 1px;
 }
 
-.test {
-    background-color: aliceblue;
-}
-
-
 .exception {
     background-color: red;
+}
+
+.faster {
+    background-color: #d1ffc8;
+}
+
+.slower {
+    background-color: #ffdfe3;
 }

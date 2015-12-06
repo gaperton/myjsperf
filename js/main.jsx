@@ -32,42 +32,48 @@ const App = React.createClass( {
 
 const CGroup = ( { group } ) => (
     <div className="group">
-        <GroupHeader group={ group } />
-        { group.tests.map( test => <CTest key={ test.cid } test={ test } selected={ group.getLink( 'selected' ) } /> )}
+        <div className="group-header" onClick={ () => group.run() }>
+            <span>{ group.name }</span>
+            { group.iterations && <span> ({group.iterations} iterations)</span> }
+        </div>
+        <div className="groupBody">
+            { group.tests.map( test => <CTest key={ test.cid }
+                                              test={ test }
+                                              selected={ group.getLink( 'selected' ) }
+                                              iterations={ group.iterations }
+                                        />
+                )}
+        </div>
     </div>
 );
 
-const GroupHeader = ({ group }) => (
-    <div className="header-col" onClick={ () => group.run() }>
-        <div>{ group.name }</div>
-        <div> { group.iterations } </div>
-        <div> <label>Executed At:</label> { group.executedAt ? group.executedAt.toString() : '-' }</div>
-        <div> <label>Total time:</label> { group.tests.time }</div>
-        <div> <label>Avg. ops:</label> { group.tests.ops  }</div>
-    </div>
-);
-
-const CTest = ({ test, selected }) => {
-    const classes = cx({
+const CTest = ({ test, selected, iterations }) => {
+    const iAmSelected = test === selected.value,
+          compare = test.count && selected.value,
+        classes = cx({
             'test' : true,
             'exception' : test.exception,
-            'faster' : test.faster > 1.2,
-            'slower' : test.faster < 0.80,
-            'selected' : test === selected.value
-    });
+            'faster' : compare && test.faster > 1.5,
+            'slower' : compare && test.faster < 0.67,
+            'selected' : iAmSelected
+        });
 
-    const howFast = test.faster > 1.05 ? test.faster.toFixed( 2 ) + 'x faster' : (
-        test.faster < 0.95 ? ( 1 / test.faster ).toFixed( 2 ) + 'x slower ' : 'same shit'
+    const howFast = test.faster > 1.05 ? test.faster.toFixed( 1 ) + 'x faster' : (
+        test.faster < 0.95 ? ( 1 / test.faster ).toFixed( 1 ) + 'x slower ' : 'same shit'
     );
 
     return (
         <div className={ classes } onClick={ () => selected.set( test ) }>
             <div>{ test.name }</div>
-            <div onClick={ () => test.run() }>
-                <div>{ ( test.time / 1000 ).toFixed( 1 ) + ' s'}</div>
-                <div>{ Integer( test.ops / 1000 ) + ' K op/s' }</div>
-                <div>{ howFast } </div>
-            </div>
+
+            <div>Time: { ( test.time / 1000 ).toFixed( 3 ) + ' s'}</div>
+            <div>Count: { test.count}</div>
+            <div>Kops: { Integer( test.ops / 1000 ) }</div>
+            { compare && !iAmSelected ?
+                <div>{ howFast }</div> :
+                <button onClick={ () => test.run( iterations )} >Run</button>
+            }
+
         </div>
     );
 };
